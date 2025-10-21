@@ -1,8 +1,17 @@
-// ===============================================================
-// Navbar.tsx — Modern, Accessible, Responsive Navbar (2025 Optimized)
-// ===============================================================
+// ============================================================================
+// Navbar.tsx — Modern, Accessible, Animated, and Responsive (2025 Optimized)
+// Refactored to use Framer Motion, clsx, and Intersection Observer
+// ============================================================================
+
 import React, { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import {
+  motion,
+  AnimatePresence,
+  easeOut,
+  easeIn,
+} from "framer-motion"; // ✅ Import easing functions
+import clsx from "clsx";
 import {
   FaEnvelope,
   FaPhone,
@@ -17,6 +26,7 @@ import {
   FaChevronDown,
   FaTimes,
 } from "react-icons/fa";
+import { useInView } from "react-intersection-observer";
 import styles from "./Navbar.module.css";
 
 /* ---------------- Types ---------------- */
@@ -86,6 +96,8 @@ const Navbar: React.FC = () => {
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const location = useLocation();
 
+  const { ref: navRef, inView } = useInView({ threshold: 0.1, triggerOnce: true });
+
   /* ---------- Auto-close on route change ---------- */
   useEffect(() => {
     if (!isMobile) {
@@ -118,9 +130,7 @@ const Navbar: React.FC = () => {
 
   /* ---------- Close on outside click or Esc ---------- */
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsMobileMenuOpen(false);
-    };
+    const handleKey = (e: KeyboardEvent) => e.key === "Escape" && setIsMobileMenuOpen(false);
 
     const handleClick = (e: MouseEvent) => {
       if (
@@ -143,7 +153,6 @@ const Navbar: React.FC = () => {
   }, [isMobileMenuOpen]);
 
   /* ---------- Dropdown handling ---------- */
-  // FIXED: Replace NodeJS.Timeout with generic browser type
   let hoverTimeout: ReturnType<typeof setTimeout>;
 
   const handleDropdownToggle = (label: string) =>
@@ -165,12 +174,30 @@ const Navbar: React.FC = () => {
     }
   };
 
+  /* ---------- Motion Variants ---------- */
+  const dropdownVariants = {
+    hidden: { opacity: 0, y: -10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.25 } },
+    exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+  };
+
+  const mobileMenuVariants = {
+    hidden: { x: "100%" },
+    visible: { x: 0, transition: { duration: 0.35, ease: easeOut } }, // ✅ FIXED
+    exit: { x: "100%", transition: { duration: 0.25, ease: easeIn } }, // ✅ FIXED
+  };
+
   /* ---------- Render ---------- */
   return (
-    <header className={styles.header}>
+    <header ref={navRef} className={clsx(styles.header, !inView && styles.sticky)}>
       {/* ---- Top Bar ---- */}
       {!isMobile && (
-        <div className={styles.topBar}>
+        <motion.div
+          className={styles.topBar}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
           <div className={styles.topBarContainer}>
             <div className={styles.contactInfo}>
               <a href="mailto:hosp@nbihosp.org" className={styles.contactItem}>
@@ -211,17 +238,17 @@ const Navbar: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* ---- Main Navbar ---- */}
       <nav className={styles.navBar} aria-label="Main navigation">
         <div className={styles.navContainer}>
-          {/* ✅ Clicking the logo now routes correctly to home */}
+          {/* Brand */}
           <Link to="/" className={styles.brand} aria-label="Go to Home">
             <img
               src="/logo.png"
-              alt="Greenbay Pharmacy Juja Logo"
+              alt="Healthfield Pharmacy Logo"
               className={styles.logo}
               style={{ cursor: "pointer" }}
             />
@@ -239,87 +266,108 @@ const Navbar: React.FC = () => {
           </button>
 
           {/* Navigation Links */}
-          <ul
-            ref={menuRef}
-            id="primary-navigation"
-            className={`${styles.navLinks} ${isMobileMenuOpen ? styles.open : ""}`}
-            role="menubar"
-          >
-            {/* Mobile Close Button */}
-            {isMobile && (
-              <li className={styles.navItem}>
-                <button
-                  className={styles.closeMenuBtn}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <FaTimes /> Close Menu
-                </button>
-              </li>
-            )}
-
-            {/* Main Nav Items */}
-            {navItems.map((item) => {
-              const isDropdownOpen = openDropdown === item.label;
-              const hasDropdown = !!item.dropdownItems;
-
-              return (
-                <li
-                  key={item.label}
-                  className={`${styles.navItem} ${isDropdownOpen ? styles.dropdownOpen : ""}`}
-                  onMouseEnter={() => handleHoverDropdown(item.label)}
-                  onMouseLeave={() => handleLeaveDropdown(item.label)}
-                  data-dropdown={item.label}
-                >
-                  <div
-                    className={styles.navLinkWrapper}
-                    onClick={() => isMobile && hasDropdown && handleDropdownToggle(item.label)}
-                  >
-                    <NavLink
-                      to={item.href}
-                      className={({ isActive }) =>
-                        `${styles.navLink} ${isActive ? styles.active : ""}`
-                      }
-                      onClick={() => {
-                        if (!isMobile) return;
-                        if (!item.dropdownItems) setIsMobileMenuOpen(false);
-                      }}
+          <AnimatePresence>
+            {(isMobileMenuOpen || !isMobile) && (
+              <motion.ul
+                ref={menuRef}
+                id="primary-navigation"
+                className={clsx(styles.navLinks, isMobileMenuOpen && styles.open)}
+                role="menubar"
+                variants={isMobile ? mobileMenuVariants : undefined}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {isMobile && (
+                  <li className={styles.navItem}>
+                    <button
+                      className={styles.closeMenuBtn}
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      {item.label}
-                      {hasDropdown && <FaChevronDown className={styles.dropdownIcon} aria-hidden="true" />}
-                    </NavLink>
-                  </div>
+                      <FaTimes /> Close Menu
+                    </button>
+                  </li>
+                )}
 
-                  {hasDropdown && (
-                    <ul
-                      className={`${styles.dropdownMenu} ${isDropdownOpen ? styles.show : ""}`}
-                      role="menu"
+                {navItems.map((item) => {
+                  const isDropdownOpen = openDropdown === item.label;
+                  const hasDropdown = !!item.dropdownItems;
+
+                  return (
+                    <li
+                      key={item.label}
+                      className={clsx(styles.navItem, isDropdownOpen && styles.dropdownOpen)}
                       onMouseEnter={() => handleHoverDropdown(item.label)}
                       onMouseLeave={() => handleLeaveDropdown(item.label)}
+                      data-dropdown={item.label}
                     >
-                      {item.dropdownItems!.map((drop) => (
-                        <li key={drop.label} role="none">
-                          <Link
-                            to={drop.href}
-                            className={styles.dropdownItem}
-                            role="menuitem"
-                            onClick={() => {
-                              if (!isMobile) return;
-                              setIsMobileMenuOpen(false);
-                            }}
+                      <div
+                        className={styles.navLinkWrapper}
+                        onClick={() => isMobile && hasDropdown && handleDropdownToggle(item.label)}
+                      >
+                        <NavLink
+                          to={item.href}
+                          className={({ isActive }) =>
+                            clsx(styles.navLink, isActive && styles.active)
+                          }
+                          onClick={() => {
+                            if (isMobile && !item.dropdownItems) setIsMobileMenuOpen(false);
+                          }}
+                        >
+                          {item.label}
+                          {hasDropdown && <FaChevronDown className={styles.dropdownIcon} aria-hidden="true" />}
+                        </NavLink>
+                      </div>
+
+                      {/* Dropdown Menu */}
+                      <AnimatePresence>
+                        {hasDropdown && isDropdownOpen && (
+                          <motion.ul
+                            className={clsx(styles.dropdownMenu, styles.show)}
+                            role="menu"
+                            variants={dropdownVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
                           >
-                            {drop.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                            {item.dropdownItems!.map((drop) => (
+                              <li key={drop.label} role="none">
+                                <Link
+                                  to={drop.href}
+                                  className={styles.dropdownItem}
+                                  role="menuitem"
+                                  onClick={() => {
+                                    if (isMobile) setIsMobileMenuOpen(false);
+                                  }}
+                                >
+                                  {drop.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </motion.ul>
+                        )}
+                      </AnimatePresence>
+                    </li>
+                  );
+                })}
+              </motion.ul>
+            )}
+          </AnimatePresence>
         </div>
 
-        {isMobileMenuOpen && <div ref={overlayRef} className={styles.overlay} />}
+        {/* Overlay for mobile menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              ref={overlayRef}
+              className={styles.overlay}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            />
+          )}
+        </AnimatePresence>
       </nav>
     </header>
   );

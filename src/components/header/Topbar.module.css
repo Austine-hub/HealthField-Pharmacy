@@ -163,3 +163,167 @@
     padding: 0 0.75rem;
   }
 }
+
+/* ============================================================================
+   Topbar.module.css — Modern, Scalable, Responsive (2025)
+   Glassy Maroon Theme + Accent Teal, with Mobile-First Design
+   ============================================================================ */
+
+/* ---------- Root Theme Variables ---------- */
+:root {
+  --color-primary: #8b1538;
+  --color-accent: #00a8e1;
+  --color-surface: #ffffff;
+  --color-text: #f9fafb;
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.15);
+  --glass-blur: blur(12px);
+  --transition: all 0.3s ease-in-out;
+  --max-width: 1200px;
+}
+
+/* ---------- Container ---------- */
+.topbar {
+  background-color: var(--color-primary);
+  color: var(--color-text);
+  width: 100%;
+  z-index: 1200;
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-soft);
+  font-family: "Inter", sans-serif;
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0.4rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- Brand ---------- */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-surface);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: var(--transition);
+}
+
+.brand:hover {
+  color: var(--color-accent);
+}
+
+.logoIcon {
+  font-size: 1.4rem;
+}
+
+/* ---------- Tagline ---------- */
+.tagline {
+  flex: 1;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-surface);
+  opacity: 0.95;
+}
+
+.highlight {
+  color: var(--color-accent);
+}
+
+/* ---------- Actions ---------- */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #ffffff;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.actionBtn:hover {
+  transform: translateY(-2px);
+}
+
+.callBtn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.callBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.whatsappBtn {
+  background: #25d366;
+  border: 1px solid transparent;
+  color: #fff;
+}
+.whatsappBtn:hover {
+  background: #20b85d;
+}
+
+.icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.actionText {
+  display: inline-block;
+}
+
+/* ---------- Responsive Design ---------- */
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .tagline {
+    font-size: 0.9rem;
+    order: 3;
+  }
+
+  .actions {
+    order: 2;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .actionBtn {
+    width: 100%;
+    max-width: 260px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brandName {
+    font-size: 1rem;
+  }
+  .tagline {
+    font-size: 0.85rem;
+  }
+  .actionBtn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+  }
+}
