@@ -6,12 +6,19 @@ import react from "@vitejs/plugin-react-swc";
 // - Enables React (SWC compiler)
 // - Fixes browser refresh on React Router routes
 // ============================================================
+
 export default defineConfig({
   plugins: [react()],
+
+  // ✅ Use appType: "spa" instead of historyApiFallback
+  appType: "spa",
+
   server: {
-    historyApiFallback: true, // 👈 ensures /about, /team etc. reload properly
+    port: 5173, // optional
+    open: true, // auto open browser
   },
+
   build: {
-    outDir: "dist", // default but good to be explicit
+    outDir: "dist", // default but explicit is good
   },
 });
